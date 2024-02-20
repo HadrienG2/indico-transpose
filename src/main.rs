@@ -2,7 +2,7 @@ use clap::Parser;
 use serde::Deserialize;
 use std::{collections::HashMap, rc::Rc};
 
-/// Information about people that we certainly care bout
+/// Information about people that we certainly care about right now
 #[allow(unused)]
 #[derive(Debug, Deserialize)]
 struct Identity {
@@ -14,7 +14,7 @@ struct Identity {
     affiliation: String,
 }
 
-/// Indico record featuring a bit of extra info we may care about someday
+/// Full indico record featuring a bit of extra info we may care about someday
 #[allow(unused)]
 #[derive(Debug, Deserialize)]
 struct Record {
