@@ -109,7 +109,11 @@ fn main() -> csv::Result<()> {
     for (_, module) in modules_by_date {
         println!("\n## {module}\n");
         for registration in &registrations_by_module[module] {
-            println!("- {registration:?}");
+            print!("- `{} <{}>`", registration.name, registration.email_address);
+            if !registration.affiliation.is_empty() {
+                print!(" from {}", registration.affiliation);
+            }
+            println!();
         }
     }
     Ok(())
