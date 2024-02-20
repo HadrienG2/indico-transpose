@@ -64,7 +64,7 @@ fn main() -> csv::Result<()> {
         let identity = Rc::new(record.identity);
         for module in record.choice_of_modules.split(';') {
             registrations_by_module
-                .entry(module.to_owned())
+                .entry(module.trim().to_owned())
                 .or_default()
                 .push(identity.clone());
         }
@@ -91,16 +91,17 @@ fn main() -> csv::Result<()> {
         };
         modules_by_date.insert(timestamp, module_name);
     }
-    println!();
+    if args.debug {
+        println!();
+    }
 
     // Display final per-module registration
-    println!("# Registrations to each module\n");
+    println!("# Registrations to each module");
     for (_, module) in modules_by_date {
-        println!("## {module}\n");
+        println!("\n## {module}\n");
         for registration in &registrations_by_module[module] {
             println!("- {registration:?}");
         }
-        println!();
     }
     Ok(())
 }
