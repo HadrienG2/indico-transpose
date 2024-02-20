@@ -84,10 +84,14 @@ fn main() -> csv::Result<()> {
             let month = month.parse::<usize>().unwrap();
             month * 100 + day
         } else {
+            if args.debug {
+                println!("WARNING: Couldn't parse start date of module {module_name}, it will be unordered in output");
+            }
             10000 + idx
         };
         modules_by_date.insert(timestamp, module_name);
     }
+    println!();
 
     // Display final per-module registration
     println!("# Registrations to each module\n");
