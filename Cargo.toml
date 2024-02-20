@@ -2,7 +2,7 @@
 name = "indico-transpose"
 authors = ["Hadrien G. <knights_of_ni@gmx.com>"]
 description = "Translate Indico's per-user registrations into per-course registrations"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 repository = "https://github.com/HadrienG2/indico-transpose"
 

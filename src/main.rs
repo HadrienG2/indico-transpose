@@ -54,11 +54,11 @@ fn main() -> csv::Result<()> {
 
     // Parse registration records, group identities by module
     if args.debug {
-        println!("DEBUG: Parsing registration records...\n");
+        eprintln!("DEBUG: Parsing registration records...\n");
     }
     for result in csv_reader.deserialize() {
         if args.debug {
-            println!("{result:#?}");
+            eprintln!("{result:#?}");
         }
         let record: Record = result?;
         let identity = Rc::new(record.identity);
@@ -70,10 +70,13 @@ fn main() -> csv::Result<()> {
         }
     }
     if args.debug {
-        println!("\n");
+        eprintln!("\n");
     }
 
     // Sort modules by starting date, if available
+    if args.debug {
+        eprintln!("DEBUG: Sorting modules by starting date...");
+    }
     let date_regex = Regex::new(r"([0-9]{1,2})/([0-9]{1,2})").unwrap();
     let mut modules_by_date = BTreeMap::new();
     for (idx, module_name) in registrations_by_module.keys().enumerate() {
@@ -85,14 +88,14 @@ fn main() -> csv::Result<()> {
             month * 100 + day
         } else {
             if args.debug {
-                println!("WARNING: Couldn't parse start date of module {module_name}, it will be unordered in output");
+                eprintln!("WARNING: Couldn't parse start date of module {module_name}, it will be unordered in output");
             }
             10000 + idx
         };
         modules_by_date.insert(timestamp, module_name);
     }
     if args.debug {
-        println!();
+        eprintln!();
     }
 
     // Display final per-module registration
