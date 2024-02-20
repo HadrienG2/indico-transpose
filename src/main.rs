@@ -1,8 +1,9 @@
-#![allow(unused)]
-
+use clap::Parser;
 use serde::Deserialize;
 use std::{collections::HashMap, rc::Rc};
 
+/// Information about people that we certainly care bout
+#[allow(unused)]
 #[derive(Debug, Deserialize)]
 struct Identity {
     #[serde(rename = "Name")]
@@ -13,6 +14,8 @@ struct Identity {
     affiliation: String,
 }
 
+/// Indico record featuring a bit of extra info we may care about someday
+#[allow(unused)]
 #[derive(Debug, Deserialize)]
 struct Record {
     #[serde(rename = "ID")]
@@ -27,10 +30,32 @@ struct Record {
     checked_in: String,
 }
 
+/// Translate Indico's per-user registrations into per-course registrations
+#[derive(Parser)]
+struct Args {
+    /// Log raw user registration records for debugging
+    #[arg(long, default_value_t = false)]
+    debug: bool,
+
+    /// Path to Indico CSV
+    #[arg(default_value_t = String::from("registrations.csv".to_owned()))]
+    input_path: String,
+}
+
 fn main() -> csv::Result<()> {
-    let mut rdr = csv::Reader::from_path("registrations.csv")?;
+    // Set up app
+    let args = Args::parse();
+    let mut csv_reader = csv::Reader::from_path(args.input_path)?;
     let mut registrations_by_module = HashMap::<_, Vec<_>>::new();
-    for result in rdr.deserialize() {
+
+    // Parse registration records, group identities by module
+    if args.debug {
+        println!("DEBUG: Parsing registration records...\n");
+    }
+    for result in csv_reader.deserialize() {
+        if args.debug {
+            println!("{result:#?}");
+        }
         let record: Record = result?;
         let identity = Rc::new(record.identity);
         for module in record.choice_of_modules.split(';') {
@@ -40,8 +65,12 @@ fn main() -> csv::Result<()> {
                 .push(identity.clone());
         }
     }
+    if args.debug {
+        println!("\n");
+    }
 
-    println!("# Registrations\n");
+    // Display final per-module registration
+    println!("# Registrations to each module\n");
     for (module, registrations) in registrations_by_module {
         println!("## {module}\n");
         for registration in registrations {
