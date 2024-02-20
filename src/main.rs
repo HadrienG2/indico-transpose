@@ -70,27 +70,33 @@ fn main() -> csv::Result<()> {
         }
     }
     if args.debug {
-        eprintln!("\n");
+        eprintln!();
     }
 
     // Sort modules by starting date, if available
     if args.debug {
-        eprintln!("DEBUG: Sorting modules by starting date...");
+        eprintln!("DEBUG: Sorting modules by start time...");
     }
-    let date_regex = Regex::new(r"([0-9]{1,2})/([0-9]{1,2})").unwrap();
+    let date_regex = Regex::new(
+        r"([0-9]{1,2})/([0-9]{1,2})(?: \+ [a-z]+. [0-9]+/[0-9]+)?, ([0-9]{1,2})[:h]([0-9]{1,2})",
+    )
+    .unwrap();
     let mut modules_by_date = BTreeMap::new();
     for (idx, module_name) in registrations_by_module.keys().enumerate() {
-        let timestamp = if let Some((_, [day, month])) =
+        let timestamp = if let Some((_, day_month_hour_min)) =
             date_regex.captures(module_name).map(|cap| cap.extract())
         {
-            let day = day.parse::<usize>().unwrap();
-            let month = month.parse::<usize>().unwrap();
-            month * 100 + day
+            let [day, month, hour, min] = day_month_hour_min.map(|s| s.parse::<usize>().unwrap());
+            let mut result = month;
+            result = result * 31 + day;
+            result = result * 24 + hour;
+            result = result * 60 + min;
+            result
         } else {
             if args.debug {
-                eprintln!("WARNING: Couldn't parse start date of module {module_name}, it will be unordered in output");
+                eprintln!("WARNING: Couldn't parse start time of module {module_name}, it will be unordered in output");
             }
-            10000 + idx
+            usize::MAX - idx
         };
         modules_by_date.insert(timestamp, module_name);
     }
