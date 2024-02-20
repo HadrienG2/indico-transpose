@@ -1,6 +1,10 @@
 use clap::Parser;
+use regex::Regex;
 use serde::Deserialize;
-use std::{collections::HashMap, rc::Rc};
+use std::{
+    collections::{BTreeMap, HashMap},
+    rc::Rc,
+};
 
 /// Information about people that we certainly care about right now
 #[allow(unused)]
@@ -69,11 +73,27 @@ fn main() -> csv::Result<()> {
         println!("\n");
     }
 
+    // Sort modules by starting date, if available
+    let date_regex = Regex::new(r"([0-9]{1,2})/([0-9]{1,2})").unwrap();
+    let mut modules_by_date = BTreeMap::new();
+    for (idx, module_name) in registrations_by_module.keys().enumerate() {
+        let timestamp = if let Some((_, [day, month])) =
+            date_regex.captures(module_name).map(|cap| cap.extract())
+        {
+            let day = day.parse::<usize>().unwrap();
+            let month = month.parse::<usize>().unwrap();
+            month * 100 + day
+        } else {
+            10000 + idx
+        };
+        modules_by_date.insert(timestamp, module_name);
+    }
+
     // Display final per-module registration
     println!("# Registrations to each module\n");
-    for (module, registrations) in registrations_by_module {
+    for (_, module) in modules_by_date {
         println!("## {module}\n");
-        for registration in registrations {
+        for registration in &registrations_by_module[module] {
             println!("- {registration:?}");
         }
         println!();

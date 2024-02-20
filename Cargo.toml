@@ -2,7 +2,7 @@
 name = "indico-transpose"
 authors = ["Hadrien G. <knights_of_ni@gmx.com>"]
 description = "Translate Indico's per-user registrations into per-course registrations"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 repository = "https://github.com/HadrienG2/indico-transpose"
 
@@ -11,6 +11,7 @@ repository = "https://github.com/HadrienG2/indico-transpose"
 [dependencies]
 clap = { version = "4.5.1", features = ["derive"] }
 csv = "1.3.0"
+regex = "1.10.3"
 serde = { version = "1.0.197", features = ["derive"] }
 
 # The profile that 'cargo dist' will build with
