@@ -23,8 +23,8 @@ struct Args {
 
 fn main() -> csv::Result<()> {
     // Set up app
-    let args = Args::parse();
     env_logger::init();
+    let args = Args::parse();
 
     // Read out raw CSV records
     let csv_reader = csv::Reader::from_path(args.input_path)?;
