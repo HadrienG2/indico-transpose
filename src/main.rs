@@ -6,6 +6,7 @@ use std::{
     collections::{BTreeMap, HashMap},
     fmt::Display,
     fs::File,
+    rc::Rc,
     sync::{Arc, OnceLock},
 };
 use time::{Date, Month, OffsetDateTime, Time};
@@ -168,6 +169,12 @@ struct Registrations {
     modules: Vec<Module>,
 }
 
+/// Index of a person within Registrations::persons
+type PersonId = usize;
+
+/// Index of a module within Registrations::modules
+type ModuleId = usize;
+
 /// What we need to know about someone who registered to modules
 #[derive(Debug)]
 struct Person {
@@ -181,14 +188,11 @@ struct Person {
     registration_time: OffsetDateTime,
 }
 
-/// Index of a module within Registrations::modules
-type ModuleId = usize;
-
 /// What we know about a module
 #[derive(Debug)]
 struct Module {
     /// Name of the module
-    name: Box<str>,
+    name: Rc<str>,
 
     /// Date and time at which the module will start
     start_time: OffsetDateTime,
@@ -227,9 +231,6 @@ impl Module {
         }
     }
 }
-
-/// Index of a module within Registrations::modules
-type PersonId = usize;
 
 impl Registrations {
     /// Translate raw Indico records into a more exploitable form
