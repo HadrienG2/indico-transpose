@@ -39,6 +39,15 @@ fn main() -> csv::Result<()> {
         .enumerate()
         .map(|(person_id, person)| (person.registration_time, person_id))
         .collect::<BTreeMap<OffsetDateTime, PersonId>>();
+    if log::max_level() >= log::Level::Debug {
+        debug!("People ordered by registration time");
+        for (date, person_id) in &persons_by_registration_time {
+            debug!(
+                "- {} ({})",
+                registrations.persons[*person_id].identity, date
+            );
+        }
+    }
 
     // For each module, produce a matching ordered list of who registered
     let mut module_to_ordered_persons =
@@ -73,10 +82,13 @@ fn main() -> csv::Result<()> {
 
 // === Input data from Indico ===
 
-/// Full indico record featuring a bit of extra info we're not using yet
+/// Indico registration record
+///
+/// The optional fields are those which I'm not using yet, but which sounded
+/// interesting and which I'm considering for future use.
 #[allow(unused)]
 #[derive(Debug, Deserialize)]
-struct CSVRow {
+struct CSVRecord {
     #[serde(rename = "ID")]
     id: Option<usize>,
     #[serde(flatten)]
@@ -90,7 +102,6 @@ struct CSVRow {
 }
 
 /// Basic information about people that we want to display in the end
-#[allow(unused)]
 #[derive(Debug, Deserialize)]
 struct Identity {
     #[serde(rename = "Name")]
@@ -134,12 +145,12 @@ time::serde::format_description!(
 );
 
 /// Load CSV records
-fn load_raw_records(mut csv_reader: csv::Reader<File>) -> csv::Result<Vec<CSVRow>> {
+fn load_raw_records(mut csv_reader: csv::Reader<File>) -> csv::Result<Vec<CSVRecord>> {
     debug!("Loading CSV registration records...");
     let mut result = Vec::new();
     for record in csv_reader.deserialize() {
         debug!("- {record:#?}");
-        let record: CSVRow = record?;
+        let record: CSVRecord = record?;
         result.push(record);
     }
     Ok(result)
@@ -186,7 +197,7 @@ struct Module {
 impl Module {
     /// Create a new module entry from the module name in Indico CSV
     fn new(module_name: &str) -> Self {
-        debug!("- Registering new module {module_name}");
+        debug!("- Registered new module: {module_name}");
         static START_TIME_REGEX: OnceLock<Regex> = OnceLock::new();
         let start_time_regex = START_TIME_REGEX.get_or_init(|| {
             Regex::new(
@@ -222,11 +233,11 @@ type PersonId = usize;
 
 impl Registrations {
     /// Translate raw Indico records into a more exploitable form
-    fn new(raw_records: Vec<CSVRow>) -> Self {
+    fn new(raw_records: Vec<CSVRecord>) -> Self {
         debug!("Post-processing registration records...");
         let mut result = Self::default();
         let mut module_to_id = HashMap::new();
-        for CSVRow {
+        for CSVRecord {
             identity,
             choice_of_modules,
             registration_time,
